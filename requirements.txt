@@ -1,6 +1,9 @@
 Django>=4.2
 djangorestframework
-mysqlclient
 python-dotenv
 django-cors-headers
 requests
+gunicorn
+whitenoise
+psycopg2-binary
+dj-database-url
