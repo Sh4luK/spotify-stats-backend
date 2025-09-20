@@ -1,35 +1,33 @@
-# /backend/spotify_stats/settings.py (VERSÃO FINAL E CORRETA)
+# /backend/spotify_stats/settings.py (VERSÃO COMPLETA)
 
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-# 1. VERIFIQUE AQUI: Coloque o hostname do seu ngrok
-ALLOWED_HOSTS = [
-    '45826be6c0b3.ngrok-free.app', # Ex: '45826be6c0b3.ngrok-free.app'
-    'localhost',
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = []
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic', # Adicionado para Whitenoise
     'django.contrib.staticfiles',
-
     'rest_framework',
     'corsheaders',
-
     'accounts.apps.AccountsConfig',
     'spotify',
     'stats.apps.StatsConfig',
@@ -37,6 +35,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Adicionado
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -66,30 +65,58 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'spotify_stats.wsgi.application'
 
-# 2. VERIFIQUE AQUI: Coloque a sua senha correta do MySQL
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'spotify_stats',
-        'USER': 'root',
-        'PASSWORD': 'maximo', # <-- ATUALIZE ESTA LINHA
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+# Configuração de Banco de Dados flexível
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'spotify_stats',
+            'USER': 'root',
+            'PASSWORD': 'senha',
+            'HOST': 'localhost',
+            'PORT': '3306',
+            'OPTIONS': { 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'" },
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = []
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CORS_ALLOWED_ORIGINS = [ os.getenv('FRONTEND_URL'), ]
+
+# --- GARANTA QUE TODA ESTA SEÇÃO ABAIXO EXISTA ---
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+# O caminho para onde o `collectstatic` irá copiar os arquivos.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configuração do WhiteNoise
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# Configuração do CORS para o frontend hospedado no Netlify
+CORS_ALLOWED_ORIGINS = [
+    os.getenv('FRONTEND_URL'),
+]
+# Adicione a URL do seu site Render como uma origem confiável
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
+# Configurações do Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
-    'DEFAULT_PERMISSION_CLASSES': [ 'rest_framework.permissions.AllowAny', ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
 }
