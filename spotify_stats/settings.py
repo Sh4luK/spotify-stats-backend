@@ -1,5 +1,3 @@
-# /backend/spotify_stats/settings.py (ATUALIZADO)
-
 import os
 import dj_database_url
 from pathlib import Path
@@ -25,16 +23,15 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders', # App
+    'corsheaders',
     'accounts.apps.AccountsConfig',
     'spotify',
     'stats.apps.StatsConfig',
 ]
 
-# --- ORDEM DO MIDDLEWARE AJUSTADA ---
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # Movido para cima
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,7 +71,7 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'spotify_stats',
             'USER': 'root',
-            'PASSWORD': 'maximo',
+            'PASSWORD': 'senha',
             'HOST': 'localhost',
             'PORT': '3306',
             'OPTIONS': { 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'" },
@@ -96,9 +93,10 @@ STORAGES = {
     },
 }
 
-# Configuração do CORS
+# --- ALTERAÇÃO PRINCIPAL AQUI ---
+# Em vez de ler da variável de ambiente, colocamos a URL diretamente.
 CORS_ALLOWED_ORIGINS = [
-    os.getenv('FRONTEND_URL'),
+    "https://melodious-pixie-ea3c85.netlify.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = []
