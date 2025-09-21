@@ -1,4 +1,4 @@
-# /backend/spotify_stats/settings.py (VERSÃO COMPLETA)
+# /backend/spotify_stats/settings.py (ATUALIZADO)
 
 import os
 import dj_database_url
@@ -8,9 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
@@ -24,20 +22,21 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # Adicionado para Whitenoise
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',
+    'corsheaders', # App
     'accounts.apps.AccountsConfig',
     'spotify',
     'stats.apps.StatsConfig',
 ]
 
+# --- ORDEM DO MIDDLEWARE AJUSTADA ---
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Adicionado
+    'corsheaders.middleware.CorsMiddleware', # Movido para cima
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -65,7 +64,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'spotify_stats.wsgi.application'
 
-# Configuração de Banco de Dados flexível
 if 'DATABASE_URL' in os.environ:
     DATABASES = {
         'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
@@ -76,7 +74,7 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'spotify_stats',
             'USER': 'root',
-            'PASSWORD': 'senha',
+            'PASSWORD': 'maximo',
             'HOST': 'localhost',
             'PORT': '3306',
             'OPTIONS': { 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'" },
@@ -90,33 +88,24 @@ USE_I18N = True
 USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- GARANTA QUE TODA ESTA SEÇÃO ABAIXO EXISTA ---
-
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-# O caminho para onde o `collectstatic` irá copiar os arquivos.
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Configuração do WhiteNoise
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
-# Configuração do CORS para o frontend hospedado no Netlify
+# Configuração do CORS
 CORS_ALLOWED_ORIGINS = [
     os.getenv('FRONTEND_URL'),
 ]
-# Adicione a URL do seu site Render como uma origem confiável
+
 CSRF_TRUSTED_ORIGINS = []
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
-# Configurações do Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
+    'DEFAULT_PERMISSION_CLASSES': [ 'rest_framework.permissions.AllowAny', ],
 }
