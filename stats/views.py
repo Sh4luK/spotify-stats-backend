@@ -7,18 +7,17 @@ from collections import Counter
 
 class TopTracksView(APIView):
     def get(self, request):
+        # --- LINHA DE TESTE ADICIONADA AQUI ---
+        print("--- EXECUTANDO TopTracksView: VERSÃO MAIS RECENTE DO CÓDIGO ---")
+        
         user_id = request.query_params.get('user_id')
-        period = request.query_params.get('period', 'medium_term') # short_term, medium_term, long_term
-        
-        if not user_id:
-            return Response({"error": "user_id is required"}, status=400)
-        
+        period = request.query_params.get('period', 'medium_term')
+        if not user_id: return Response({"error": "user_id is required"}, status=400)
         try:
             user = User.objects.get(spotify_id=user_id)
             data = get_user_top_items(user, 'tracks', period=period, limit=20)
             return Response(data)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=404)
+        except User.DoesNotExist: return Response({"error": "User not found"}, status=404)
 
 class TopArtistsView(APIView):
     def get(self, request):
