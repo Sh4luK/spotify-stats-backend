@@ -9,11 +9,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-# Configuração de Hosts mais robusta
-RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+# Lógica de ALLOWED_HOSTS atualizada
 ALLOWED_HOSTS = []
+
+# Adiciona o host do Render se estiver em produção
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Adiciona o host do ngrok se estiver em desenvolvimento local com ngrok
+NGROK_HOSTNAME = os.getenv('NGROK_HOSTNAME')
+if NGROK_HOSTNAME:
+    ALLOWED_HOSTS.append(NGROK_HOSTNAME)
 
 
 INSTALLED_APPS = [
@@ -31,12 +38,11 @@ INSTALLED_APPS = [
     'stats.apps.StatsConfig',
 ]
 
-# Ordem do MIDDLEWARE revisada para produção
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # WhiteNoise logo após Security
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # CORS depois das sessões
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -46,22 +52,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'spotify_stats.urls'
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
+TEMPLATES = [ { 'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': [], 'APP_DIRS': True, 'OPTIONS': { 'context_processors': [ 'django.template.context_processors.debug', 'django.template.context_processors.request', 'django.contrib.auth.context_processors.auth', 'django.contrib.messages.context_processors.messages', ], }, }, ]
 WSGI_APPLICATION = 'spotify_stats.wsgi.application'
 
 if 'DATABASE_URL' in os.environ:
@@ -69,17 +60,7 @@ if 'DATABASE_URL' in os.environ:
         'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
     }
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'spotify_stats',
-            'USER': 'root',
-            'PASSWORD': 'maximo',
-            'HOST': 'localhost',
-            'PORT': '3306',
-            'OPTIONS': { 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'" },
-        }
-    }
+    DATABASES = { 'default': { 'ENGINE': 'django.db.backends.mysql', 'NAME': 'spotify_stats', 'USER': 'root', 'PASSWORD': 'maximo', 'HOST': 'localhost', 'PORT': '3306', 'OPTIONS': { 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'" }, } }
 
 AUTH_PASSWORD_VALIDATORS = []
 LANGUAGE_CODE = 'pt-br'
@@ -90,24 +71,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+STORAGES = { "staticfiles": { "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage", }, }
 
-# Configuração de CORS final e robusta
 CORS_ALLOWED_ORIGINS = [
     os.getenv('FRONTEND_URL'),
-    "https://melodious-pixie-ea3c85.netlify.app", # Adicionando a URL diretamente
+    "https://melodious-pixie-ea3c85.netlify.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = []
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
-    'DEFAULT_PERMISSION_CLASSES': [ 'rest_framework.permissions.AllowAny', ],
-}
+REST_FRAMEWORK = { 'DEFAULT_AUTHENTICATION_CLASSES': [], 'DEFAULT_PERMISSION_CLASSES': [ 'rest_framework.permissions.AllowAny', ], }
