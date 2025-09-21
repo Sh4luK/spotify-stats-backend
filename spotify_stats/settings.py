@@ -93,11 +93,15 @@ STORAGES = {
     },
 }
 
-# --- ALTERAÇÃO PRINCIPAL AQUI ---
-# Em vez de ler da variável de ambiente, colocamos a URL diretamente.
-CORS_ALLOWED_ORIGINS = [
-    "https://melodious-pixie-ea3c85.netlify.app",
-]
+# --- ALTERAÇÃO PRINCIPAL AQUI PARA O TESTE ---
+# Permite que QUALQUER origem acesse a API. Apenas para depuração.
+CORS_ORIGIN_ALLOW_ALL = True
+
+# Deixamos a configuração original comentada por enquanto.
+# CORS_ALLOWED_ORIGINS = [
+#     "https://melodious-pixie-ea3c85.netlify.app",
+# ]
+
 
 CSRF_TRUSTED_ORIGINS = []
 if RENDER_EXTERNAL_HOSTNAME:
