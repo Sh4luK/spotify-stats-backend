@@ -9,10 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+# Configuração de Hosts mais robusta
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+ALLOWED_HOSTS = []
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -29,11 +31,12 @@ INSTALLED_APPS = [
     'stats.apps.StatsConfig',
 ]
 
+# Ordem do MIDDLEWARE revisada para produção
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # WhiteNoise logo após Security
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # CORS depois das sessões
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -71,7 +74,7 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'spotify_stats',
             'USER': 'root',
-            'PASSWORD': 'senha',
+            'PASSWORD': 'maximo',
             'HOST': 'localhost',
             'PORT': '3306',
             'OPTIONS': { 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'" },
@@ -93,19 +96,16 @@ STORAGES = {
     },
 }
 
-# --- ALTERAÇÃO PRINCIPAL AQUI PARA O TESTE ---
-# Permite que QUALQUER origem acesse a API. Apenas para depuração.
-CORS_ORIGIN_ALLOW_ALL = True
-
-# Deixamos a configuração original comentada por enquanto.
-# CORS_ALLOWED_ORIGINS = [
-#     "https://melodious-pixie-ea3c85.netlify.app",
-# ]
-
+# Configuração de CORS final e robusta
+CORS_ALLOWED_ORIGINS = [
+    os.getenv('FRONTEND_URL'),
+    "https://melodious-pixie-ea3c85.netlify.app", # Adicionando a URL diretamente
+]
 
 CSRF_TRUSTED_ORIGINS = []
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
