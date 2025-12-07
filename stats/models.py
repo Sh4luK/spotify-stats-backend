@@ -13,5 +13,3 @@ class TopTrack(models.Model):
     
     class Meta:
         unique_together = ('user', 'spotify_track_id', 'period', 'rank')
-
-# Você pode adicionar outros modelos como TopArtist aqui, seguindo a mesma lógica.
